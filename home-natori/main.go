@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
+	"math/rand"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -61,8 +63,14 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	req := FulfillmentRequest{}
 	json.Unmarshal([]byte(request.Body), &req)
 	fmt.Println(req.QueryResult.QueryText)
-	data := FulfillmentResponse{"<speak><audio src=\"https://s3-ap-northeast-1.amazonaws.com/usamin-star/NatoriSana/goodnight.mp3\">a</audio></speak>"}
-
+	data := FulfillmentResponse{}
+	if req.QueryResult.QueryText == "GOOGLE_ASSISTANT_WELCOME" || req.QueryResult.QueryText == "おやすみ" {
+		data.FulfillmentText = "<speak><audio src=\"https://s3-ap-northeast-1.amazonaws.com/usamin-star/NatoriSana/goodnight.mp3\">a</audio></speak>"
+	} else {
+		rand.Seed(time.Now().UnixNano())
+		num := rand.Intn(84)
+		data.FulfillmentText = fmt.Sprintf("<speak><audio src=\"https://s3-ap-northeast-1.amazonaws.com/usamin-star/NatoriSana/tene/ttene%03d.mp3\">a</audio></speak>", num)
+	}
 	res, err := JSONSafeMarshal(data)
 	if err != nil {
 		fmt.Println("JSON Marshal error:", err)
