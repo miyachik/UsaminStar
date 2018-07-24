@@ -14,6 +14,39 @@ type FulfillmentResponse struct {
 	FulfillmentText string `json:"fulfillmentText"`
 }
 
+type FulfillmentRequest struct {
+	OriginalDetectIntentRequest struct{} `json:"originalDetectIntentRequest"`
+	QueryResult                 struct {
+		AllRequiredParamsPresent bool     `json:"allRequiredParamsPresent"`
+		DiagnosticInfo           struct{} `json:"diagnosticInfo"`
+		FulfillmentMessages      []struct {
+			Text struct {
+				Text []string `json:"text"`
+			} `json:"text"`
+		} `json:"fulfillmentMessages"`
+		FulfillmentText string `json:"fulfillmentText"`
+		Intent          struct {
+			DisplayName string `json:"displayName"`
+			Name        string `json:"name"`
+		} `json:"intent"`
+		IntentDetectionConfidence int64  `json:"intentDetectionConfidence"`
+		LanguageCode              string `json:"languageCode"`
+		OutputContexts            []struct {
+			LifespanCount int64  `json:"lifespanCount"`
+			Name          string `json:"name"`
+			Parameters    struct {
+				Param string `json:"param"`
+			} `json:"parameters"`
+		} `json:"outputContexts"`
+		Parameters struct {
+			Param string `json:"param"`
+		} `json:"parameters"`
+		QueryText string `json:"queryText"`
+	} `json:"queryResult"`
+	ResponseID string `json:"responseId"`
+	Session    string `json:"session"`
+}
+
 func JSONSafeMarshal(v interface{}) ([]byte, error) {
 	b, err := json.Marshal(v)
 	b = bytes.Replace(b, []byte("\\u003c"), []byte("<"), -1)
@@ -25,7 +58,10 @@ func JSONSafeMarshal(v interface{}) ([]byte, error) {
 func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	fmt.Println("Received body: ", request.Body)
 
-  data := FulfillmentResponse{"<speak><audio src=\"https://s3-ap-northeast-1.amazonaws.com/usamin-star/NatoriSana/goodnight.mp3\">a</audio></speak>"}
+	req := FulfillmentRequest{}
+	json.Unmarshal([]byte(request.Body), &req)
+	fmt.Println(req.QueryResult.QueryText)
+	data := FulfillmentResponse{"<speak><audio src=\"https://s3-ap-northeast-1.amazonaws.com/usamin-star/NatoriSana/goodnight.mp3\">a</audio></speak>"}
 
 	res, err := JSONSafeMarshal(data)
 	if err != nil {
